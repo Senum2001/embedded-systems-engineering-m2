@@ -1,0 +1,16 @@
+{
+  "name": "ecowatt-device",
+  "version": "2.0.0",
+  "description": "EcoWatt Device C++ Implementation for Milestone 2",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "curl",
+      "features": ["ssl", "http2"]
+    },
+    "sqlite3",
+    "nlohmann-json",
+    "spdlog"
+  ],
+  "builtin-baseline": "b1b19307e2d2ec1eefbdb7ea069de7d4bcd31f01"
+}

@@ -1,0 +1,118 @@
+{
+  "application": {
+    "name": "EcoWatt Device",
+    "version": "2.0.0",
+    "description": "Milestone 2: Inverter SIM Integration and Basic Acquisition"
+  },
+  "modbus": {
+    "slave_address": 17,
+    "timeout_ms": 5000,
+    "max_retries": 3,
+    "retry_delay_ms": 1000,
+    "supported_functions": {
+      "read_holding_registers": 3,
+      "write_single_register": 6
+    }
+  },
+  "acquisition": {
+    "polling_interval_ms": 10000,
+    "max_samples_per_register": 1000,
+    "minimum_registers": [0, 1],
+    "enable_background_polling": true
+  },
+  "storage": {
+    "memory_retention_samples": 1000,
+    "enable_persistent_storage": true,
+    "cleanup_interval_hours": 24,
+    "data_retention_days": 30
+  },
+  "api": {
+    "endpoints": {
+      "read": "/api/inverter/read",
+      "write": "/api/inverter/write"
+    },
+    "headers": {
+      "content_type": "application/json",
+      "accept": "*/*"
+    }
+  },
+  "registers": {
+    "0": {
+      "name": "Vac1_L1_Phase_voltage",
+      "unit": "V",
+      "gain": 10.0,
+      "access": "Read",
+      "description": "L1 Phase voltage"
+    },
+    "1": {
+      "name": "Iac1_L1_Phase_current", 
+      "unit": "A",
+      "gain": 10.0,
+      "access": "Read",
+      "description": "L1 Phase current"
+    },
+    "2": {
+      "name": "Fac1_L1_Phase_frequency",
+      "unit": "Hz", 
+      "gain": 100.0,
+      "access": "Read",
+      "description": "L1 Phase frequency"
+    },
+    "3": {
+      "name": "Vpv1_PV1_input_voltage",
+      "unit": "V",
+      "gain": 10.0,
+      "access": "Read", 
+      "description": "PV1 input voltage"
+    },
+    "4": {
+      "name": "Vpv2_PV2_input_voltage",
+      "unit": "V",
+      "gain": 10.0,
+      "access": "Read",
+      "description": "PV2 input voltage"
+    },
+    "5": {
+      "name": "Ipv1_PV1_input_current",
+      "unit": "A",
+      "gain": 10.0,
+      "access": "Read",
+      "description": "PV1 input current"
+    },
+    "6": {
+      "name": "Ipv2_PV2_input_current",
+      "unit": "A", 
+      "gain": 10.0,
+      "access": "Read",
+      "description": "PV2 input current"
+    },
+    "7": {
+      "name": "Inverter_internal_temperature",
+      "unit": "°C",
+      "gain": 10.0,
+      "access": "Read",
+      "description": "Inverter internal temperature"
+    },
+    "8": {
+      "name": "Export_power_percentage",
+      "unit": "%",
+      "gain": 1.0,
+      "access": "Read/Write",
+      "description": "Set the export power percentage"
+    },
+    "9": {
+      "name": "Pac_L_Inverter_output_power",
+      "unit": "W",
+      "gain": 1.0,
+      "access": "Read",
+      "description": "Inverter current output power"
+    }
+  },
+  "logging": {
+    "console_level": "INFO",
+    "file_level": "DEBUG",
+    "max_file_size_mb": 10,
+    "max_files": 5,
+    "format": "[%Y-%m-%d %H:%M:%S] [%l] %v"
+  }
+}
