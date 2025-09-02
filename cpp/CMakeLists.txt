@@ -1,113 +1,127 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Use Clang on Windows if available
-if (WIN32)
-    set(CMAKE_C_COMPILER "clang")
-    set(CMAKE_CXX_COMPILER "clang++")
-endif()
-
-# Project configuration
-project(EcoWattDevice 
+# ----------------------------------------
+# Project
+# ----------------------------------------
+project(EcoWattDevice
     VERSION 2.0.0
     DESCRIPTION "EcoWatt Device C++ Implementation for Milestone 2"
     LANGUAGES CXX
 )
 
-# Set C++ standard
+# Make IntelliSense happy: exact compile flags for VS Code
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Default build type
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+# C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Set build type if not specified
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+# ----------------------------------------
+# (Optional) Prefer Clang on Windows via clang-cl only for Visual Studio generator
+# For Ninja or other generators, let CMake choose clang++/cl based on configuration
+# to avoid incompatible flags like -isystem with clang-cl.
+# ----------------------------------------
+if (WIN32 AND CMAKE_GENERATOR MATCHES "Visual Studio")
+  find_program(LLVM_CLANG_CL NAMES clang-cl)
+  if (LLVM_CLANG_CL)
+    # Use clang-cl so MSVC-style flags (/W3, /Zi, etc.) still work with VS generator
+    set(CMAKE_C_COMPILER  "${LLVM_CLANG_CL}" CACHE FILEPATH "" FORCE)
+    set(CMAKE_CXX_COMPILER "${LLVM_CLANG_CL}" CACHE FILEPATH "" FORCE)
+    message(STATUS "Using clang-cl toolchain (VS generator): ${LLVM_CLANG_CL}")
+  else()
+    message(STATUS "clang-cl not found; using default MSVC toolchain for VS generator")
+  endif()
 endif()
 
-# Add compile options
-if(MSVC)
-    add_compile_options(/W3)  # Use W3 instead of W4 to reduce excessive warnings
-    # Enable parallel compilation
-    add_compile_options(/MP)
-    # Add debug info for Release builds
-    add_compile_options(/Zi)
-    add_link_options(/DEBUG)
-    # Disable specific warnings for external libraries
-    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    # Disable specific warnings that are common with vcpkg libraries
-    add_compile_options(/wd4244 /wd4100 /wd4456)  # Disable conversion and unused parameter warnings
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-# Use vcpkg for dependency management
+# ----------------------------------------
+# Dependencies (vcpkg-friendly)
+# ----------------------------------------
 if(DEFINED CMAKE_TOOLCHAIN_FILE)
-    message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+  message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
 endif()
 
-# Find required packages using vcpkg
 find_package(Threads REQUIRED)
-
-# Find cURL - vcpkg provides CURL::libcurl
 find_package(CURL REQUIRED)
-if(CURL_FOUND)
-    message(STATUS "Found cURL: ${CURL_VERSION}")
-    message(STATUS "cURL include dirs: ${CURL_INCLUDE_DIRS}")
-    message(STATUS "cURL libraries: ${CURL_LIBRARIES}")
-endif()
-
-# Find SQLite3 - vcpkg provides unofficial::sqlite3::sqlite3
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
-
-# Find nlohmann/json - vcpkg provides nlohmann_json::nlohmann_json
 find_package(nlohmann_json CONFIG REQUIRED)
-
-# Find spdlog - vcpkg provides spdlog::spdlog
 find_package(spdlog CONFIG REQUIRED)
 
-# Include directories
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# Source files
+# ----------------------------------------
+# Sources
+# ----------------------------------------
 set(SOURCES
-    src/config_manager.cpp
-    src/protocol_adapter.cpp
-    src/acquisition_scheduler.cpp
-    src/data_storage.cpp
-    src/ecoWatt_device.cpp
-    src/modbus_frame.cpp
-    src/http_client.cpp
-    src/logger.cpp
+  src/config_manager.cpp
+  src/protocol_adapter.cpp
+  src/acquisition_scheduler.cpp
+  src/data_storage.cpp
+  src/ecoWatt_device.cpp
+  src/modbus_frame.cpp
+  src/http_client.cpp
+  src/logger.cpp
+  src/main.cpp
 )
 
-# Header files
 set(HEADERS
-    include/config_manager.hpp
-    include/protocol_adapter.hpp
-    include/acquisition_scheduler.hpp
-    include/data_storage.hpp
-    include/ecoWatt_device.hpp
-    include/modbus_frame.hpp
-    include/http_client.hpp
-    include/logger.hpp
-    include/types.hpp
-    include/exceptions.hpp
+  include/config_manager.hpp
+  include/protocol_adapter.hpp
+  include/acquisition_scheduler.hpp
+  include/data_storage.hpp
+  include/ecoWatt_device.hpp
+  include/modbus_frame.hpp
+  include/http_client.hpp
+  include/logger.hpp
+  include/types.hpp
+  include/exceptions.hpp
 )
 
-# Create main executable
-add_executable(${PROJECT_NAME} src/main.cpp ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})
 
-
-# Set target properties
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
+# Include paths (project headers)
+target_include_directories(${PROJECT_NAME}
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# ----------------------------------------
+# Compile options per compiler
+# ----------------------------------------
+# Common warnings for GCC/Clang
+target_compile_options(${PROJECT_NAME}
+  PRIVATE
+    $<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<NOT:$<CXX_COMPILER_ID:AppleClang>>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-Wall -Wextra -Wpedantic>
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall -Wextra -Wpedantic>
+)
 
-# Link libraries
-target_link_libraries(${PROJECT_NAME}
+# MSVC / clang-cl flags
+if (MSVC)
+  target_compile_options(${PROJECT_NAME}
     PRIVATE
+      /W3         # reasonable warnings
+      /permissive-# strict C++ conformance
+      /MP         # parallel build
+  )
+  # Debug info even for Release, if desired
+  target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:Release>:/Zi>")
+  target_link_options(${PROJECT_NAME}    PRIVATE "$<$<CONFIG:Release>:/DEBUG>")
+
+  # Common MSVC nuisance suppressions (optional)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE
+    _CRT_SECURE_NO_WARNINGS
+  )
+endif()
+
+# ----------------------------------------
+# Link libraries
+# ----------------------------------------
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
     nlohmann_json::nlohmann_json
     spdlog::spdlog
     CURL::libcurl
@@ -115,24 +129,28 @@ target_link_libraries(${PROJECT_NAME}
     Threads::Threads
 )
 
-
-# Compiler definitions
-target_compile_definitions(${PROJECT_NAME} PRIVATE 
-    PROJECT_VERSION="${PROJECT_VERSION}"
-    PROJECT_NAME="${PROJECT_NAME}"
+# Project-level defines
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+  PROJECT_VERSION="${PROJECT_VERSION}"
+  PROJECT_NAME="${PROJECT_NAME}"
 )
 
-# Copy configuration files to build directory
+# ----------------------------------------
+# Post-build: copy runtime config files next to the executable
+# ----------------------------------------
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-    $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json
-    COMMENT "Copying config.json to build directory"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${CMAKE_CURRENT_SOURCE_DIR}/config.json
+          $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json
+  COMMENT "Copying config.json to build directory"
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/.env
-    $<TARGET_FILE_DIR:${PROJECT_NAME}>/.env
-    COMMENT "Copying .env to build directory"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${CMAKE_CURRENT_SOURCE_DIR}/.env
+          $<TARGET_FILE_DIR:${PROJECT_NAME}>/.env
+  COMMENT "Copying .env to build directory"
 )
+
+# (Nice-to-have) Group files in IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES} ${HEADERS})

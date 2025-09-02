@@ -55,7 +55,7 @@ void HttpClient::setupCurl() {
 HttpResponse HttpClient::post(const std::string& endpoint,
                              const std::string& data,
                              const std::map<std::string, std::string>& headers) {
-    
+    std::lock_guard<std::mutex> lock(mutex_);
     std::string url = base_url_ + endpoint;
     std::string response_body;
     
@@ -107,7 +107,7 @@ HttpResponse HttpClient::post(const std::string& endpoint,
 
 HttpResponse HttpClient::get(const std::string& endpoint,
                             const std::map<std::string, std::string>& headers) {
-    
+    std::lock_guard<std::mutex> lock(mutex_);
     std::string url = base_url_ + endpoint;
     std::string response_body;
     

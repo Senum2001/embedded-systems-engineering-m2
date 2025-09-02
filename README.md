@@ -262,3 +262,16 @@ curl -X POST "http://20.15.114.131:8080/api/inverter/write" `
 ---
 
 Course context: EN4440 Embedded Systems Engineering — University of Moratuwa
+
+-----
+
+# Configure and build (from repo root)
+Set-Location 'C:\Users\senum\OneDrive\Desktop\milestone2\cpp'
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE='C:\vcpkg\scripts\buildsystems\vcpkg.cmake' -A x64
+cmake --build build --config Release --parallel
+
+# Run
+Set-Location 'C:\Users\senum\OneDrive\Desktop\milestone2\cpp\build\Release'
+.\EcoWattDevice.exe --config 'config.json' --env '.env'
+
+----
