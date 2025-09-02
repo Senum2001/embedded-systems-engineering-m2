@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
+# Use Clang on Windows if available
+if (WIN32)
+    set(CMAKE_C_COMPILER "clang")
+    set(CMAKE_CXX_COMPILER "clang++")
+endif()
+
 # Project configuration
 project(EcoWattDevice 
     VERSION 2.0.0

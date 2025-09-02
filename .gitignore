@@ -1,0 +1,59 @@
+# C++ build artifacts
+/build/
+cpp/build/
+cpp/Release/
+cpp/*.exe
+cpp/*.dll
+cpp/*.pdb
+cpp/*.log
+cpp/*.db
+cpp/*.obj
+cpp/*.lib
+cpp/*.exp
+cpp/*.ilk
+cpp/*.idb
+cpp/*.suo
+cpp/*.user
+cpp/*.ipch
+cpp/*.aps
+cpp/*.ncb
+cpp/*.sdf
+cpp/*.opensdf
+cpp/*.VC.db
+cpp/*.VC.opendb
+cpp/.vs/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# vcpkg
+cpp/vcpkg_installed/
+cpp/vcpkg-manifest-install.log
+
+# VS Code
+.vscode/
+
+# Python, Jupyter, and other editors
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Misc
+*.swp
+*.bak
+*.tmp
+*.old
