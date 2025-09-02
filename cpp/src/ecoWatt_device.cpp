@@ -177,8 +177,8 @@ bool EcoWattDevice::setExportPower(uint8_t percentage) {
     }
     
     try {
-        // Register 1 is typically used for export power control
-        RegisterAddress power_register = 1;
+    // Per API/register spec, register 8 controls export power percentage
+    RegisterAddress power_register = 8;
         RegisterValue power_value = static_cast<RegisterValue>(percentage);
         
         bool success = acquisition_scheduler_->performWriteOperation(power_register, power_value);
