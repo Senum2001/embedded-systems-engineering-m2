@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <curl/curl.h>
+#include <mutex>
 
 namespace ecoWatt {
 
@@ -85,6 +86,7 @@ private:
     std::string base_url_;
     uint32_t timeout_ms_;
     std::map<std::string, std::string> default_headers_;
+    mutable std::mutex mutex_;
     
     // Callback for writing response data
     static size_t writeCallback(void* contents, size_t size, size_t nmemb, std::string* data);
