@@ -187,7 +187,7 @@ bool ModbusFrame::validateFrame(const std::vector<uint8_t>& frame_bytes) {
         return false;
     }
     
-    // Extract CRC from frame (little-endian)
+    // Extract CRC from frame (little-endian - Modbus RTU standard)
     uint16_t received_crc = frame_bytes[frame_bytes.size() - 2] | 
                            (frame_bytes[frame_bytes.size() - 1] << 8);
     
@@ -241,7 +241,7 @@ std::vector<uint8_t> ModbusFrame::buildFrame(SlaveAddress slave_address,
 void ModbusFrame::appendCRC(std::vector<uint8_t>& frame) {
     uint16_t crc = calculateCRC(frame);
     
-    // Append CRC in little-endian format
+    // Append CRC in little-endian format (Modbus RTU standard)
     frame.push_back(crc & 0xFF);        // LSB first
     frame.push_back((crc >> 8) & 0xFF); // MSB second
 }

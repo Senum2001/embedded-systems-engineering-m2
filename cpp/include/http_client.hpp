@@ -11,7 +11,8 @@
 #include "exceptions.hpp"
 #include <string>
 #include <map>
-#include <curl/curl.h>
+#include <cpprest/http_client.h>
+#include <cpprest/filestream.h>
 #include <mutex>
 
 namespace ecoWatt {
@@ -28,7 +29,7 @@ struct HttpResponse {
 };
 
 /**
- * @brief HTTP client for REST API communication using libcurl
+ * @brief HTTP client for REST API communication using cpprestsdk
  */
 class HttpClient {
 public:
@@ -82,20 +83,17 @@ public:
     void setSSLVerification(bool enable);
 
 private:
-    CURL* curl_;
+    std::unique_ptr<web::http::client::http_client> client_;
     std::string base_url_;
     uint32_t timeout_ms_;
     std::map<std::string, std::string> default_headers_;
     mutable std::mutex mutex_;
     
-    // Callback for writing response data
-    static size_t writeCallback(void* contents, size_t size, size_t nmemb, std::string* data);
+    // Helper to convert std::map to http_headers
+    web::http::http_headers buildHeaders(const std::map<std::string, std::string>& headers);
     
-    // Setup common curl options
-    void setupCurl();
-    
-    // Add headers to curl request
-    struct curl_slist* addHeaders(const std::map<std::string, std::string>& headers);
+    // Helper to convert http_response to HttpResponse
+    HttpResponse convertResponse(const web::http::http_response& response);
 };
 
 } // namespace ecoWatt

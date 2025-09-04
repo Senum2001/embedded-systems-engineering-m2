@@ -4,10 +4,7 @@
   "description": "EcoWatt Device C++ Implementation for Milestone 2",
   "license": "MIT",
   "dependencies": [
-    {
-      "name": "curl",
-      "features": ["ssl", "http2"]
-    },
+    "cpprestsdk",
     "sqlite3",
     "nlohmann-json",
     "spdlog"

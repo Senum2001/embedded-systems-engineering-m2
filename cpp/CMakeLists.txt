@@ -47,7 +47,7 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 find_package(Threads REQUIRED)
-find_package(CURL REQUIRED)
+find_package(cpprestsdk CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
@@ -82,6 +82,10 @@ set(HEADERS
 
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})
+
+# Add test frame program
+add_executable(test_frames test_frames.cpp)
+add_executable(test_crc test_crc.cpp)
 
 # Include paths (project headers)
 target_include_directories(${PROJECT_NAME}
@@ -124,7 +128,7 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE
     nlohmann_json::nlohmann_json
     spdlog::spdlog
-    CURL::libcurl
+    cpprestsdk::cpprest
     unofficial::sqlite3::sqlite3
     Threads::Threads
 )
