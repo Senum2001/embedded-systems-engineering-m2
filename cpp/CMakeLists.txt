@@ -83,10 +83,6 @@ set(HEADERS
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})
 
-# Add test frame program
-add_executable(test_frames test_frames.cpp)
-add_executable(test_crc test_crc.cpp)
-
 # Include paths (project headers)
 target_include_directories(${PROJECT_NAME}
   PRIVATE
