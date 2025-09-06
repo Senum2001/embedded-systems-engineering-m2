@@ -52,6 +52,13 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
+# Testing dependencies (optional)
+option(BUILD_TESTING "Build tests" OFF)
+if(BUILD_TESTING)
+  find_package(GTest CONFIG REQUIRED)
+  enable_testing()
+endif()
+
 # ----------------------------------------
 # Sources
 # ----------------------------------------
@@ -154,3 +161,10 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 # (Nice-to-have) Group files in IDEs
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES} ${HEADERS})
+
+# ----------------------------------------
+# Testing
+# ----------------------------------------
+if(BUILD_TESTING)
+  add_subdirectory(../tests tests)
+endif()

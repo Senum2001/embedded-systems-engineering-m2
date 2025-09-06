@@ -15,7 +15,7 @@
     }
   },
   "acquisition": {
-    "polling_interval_ms": 10000,
+    "polling_interval_ms": 5000,
     "max_samples_per_register": 1000,
     "minimum_registers": [0, 1],
     "enable_background_polling": true
